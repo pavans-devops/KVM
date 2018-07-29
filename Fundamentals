@@ -1,0 +1,453 @@
+Linux KVM Virtualization Essentials
+-----------
+1.1 What is Virtualization:
+
+Hardware Virtualization:
+- Full Virtualization:
+	- Complete simulation of the actual hardware to allow software, which typically consists of a guest machine or virtual machine.
+	- KVM uses full virtulization
+	
+- Pra-virtulization:
+	- The hardware environment is not simulated
+
+Desktop Virtualization:
+- Desktop virtulization is the concept of separating the logical desktop from physical machine.
+- VDI Virtual Desktop Infrastructure.
+
+Hypervisors:
+----
+- VMM/Hypervisors is a piece of software that is responsible for monitoring and controlling virtual machines or guest operating systems.
+- Type 1 Hypervisors:
+ - The Hypervisors runs directly on top of the hardware
+
+- Type 2 Hypervisors:
+	- The Hypervisors acts as a separate layer often on top of a base operating system.
+	
+- Thin Provisioning:
+	- Allows you to optimize available storage space for the guest virtual machines.
+	- Similar to overcommitting, but only pertains to storage, not CPU and memory.
+	- Can also pose risk to the system stability.
+
+2.1 Lecture: Linux Virtualization
+
+- Process through which one or more virtual machines can be installed, executed and maintained on top of the Linux Operating System.
+- Linux Virtualization brings openness, flexibility and high performance.
+
+- Open Source Virtualization Projects:
+	- KVM
+	- Xen
+	- Virtual Box
+	- UML - User Mode Linux
+
+Kernel Same-Page Merging(KSM)
+	- Allows KVM guests to share identical memory pages.
+	- Shared common libraries or other identical, high-use data
+	- KSM allows for greater guest density of identical or similar guest operating systems by avoiding memory duplication.
+
+QEMU Guest Agent:
+	- Runs on the guest virtual machine's operating system in order to issue commands to the guest OS from the host OS.
+
+Nested Virtualization:
+	- For example, it is possible so that the KVM guest can operate as virtual hosts, essentially allowing users to create one or more KVM guests within each KVM guest.
+	
+Linux Virtualization and the Cloud:
+	- OpenStack
+	- Eucalytus
+	- CloudStack
+* Amazon using Xen virtulization
+
+3. KVM Overview
+-------------
+3.1 Lecture: KVM Overview
+
+What is KVM (Kernal-based Virtual Machine)
+- KVM is a hypervisor which is built into the Linux Kernal
+- Allows Linux Desktops or servers to simulate multiple pieces of hardware.
+- Full virtulization solution for Linux on x86 hardware that contains virtulization	extensions such as intel VT and AMD-V
+- KVM uses the QEMU (Quick Emulator) virtual machine format
+
+KVM Overview:
+----
+- The KVM module creates a bare metal hypervisor on the Linux Kernal.
+- Virtual Machines can be loaded onto this hypervisor, running separate OSes
+- Any storage that is supported by Linux can store virtual machine images (local disks, SCSI or networking-attached storage such as NFS and SAN)
+
+KVM Overview:
+----
+- KVM supports a variety of operating system guest such as:
+ - Linux distributations, Microsoft Windows, OpenBSD, FreeBSD, Open Solaris, MS DOS and more
+
+- KVM Benefits of Use:
+	- Lower cost
+	- Enterprise performance and higher scalability
+	- Advanced security
+	- High Quality of Service(QoS)
+	- The Open Ecosystem
+
+KVM Use Cases:
+----
+- Hypervisor of choice for cloud
+- Enterprise virtulization for large-scale enterprises
+- Virtualizing Linux servers
+- virtulization of compute, storage and networking 
+
+Openstack and KVM:
+--------
+- OpenStack is a cloud platform that uses open source technology for both private and public clouds.
+- KVM is the hypervisor of choice for openstack deployments
+
+Lecture: User Space and Kernel Space
+------------
+KVM and Linux
+	- KVM allows us to turn the Linux Kernel into a hypervisor
+	- QEMU is used for I/) emulations with userland(user space) software.
+		- Userland is user space software that does not use the Linux Kernel.
+		- Computer memory is manged and divided into Kernel space and user space
+
+Lecture: Standalone KVM Virtualization
+------
+Virtual Machine Monitor - VMM/Hypervisor
+	- VMM(Hypervisor)
+	- Compute software, firmware, or hardware that creates and runs virtual machines.
+	- The KVM kernel Module is not enough to just start running virtual machines...
+
+Quick Emulator - QEMU
+	- ...In order to run these virtual machines KVM also needs an emulator to emulate the hardware peripherals for the virtual machines.
+	- Open source machine emulator that helps you to run the oprating systems that are designed to run one architecture on top of another.
+	- QEMU uses dynamic translation, which is technique used to execute virtual machine instructions on the host machine.
+	
+KVM Quick Emulator - KVM Qemu:
+	- QEMU is general is slow
+	- KVM developers created qemu-kvm, which can interact with KVM modules directly and safely execute instructions from the VM directly to the CPU without using dynamic translations.
+	
+Libvirt:
+	- Libvirt is a set of API Libraries that sites in between the end user and the hypervisor
+	- The hypervisor could be built to use any virtulization technology such as KVM/QEMU,XEN,LXC, VirtulBox, VMWare ESX, MS HyperV and even parallels
+	- Libvirt acts as a sort of transparent layer that can take commands from users, modifies them based on the underlying virtulization technology, and then executes them on the actual hypervisor.
+	- Tools include the libvirtd daemon, API Library, and command line utility called virsh.
+	
+virsh:
+	- A command line tool to manage VM Guests with similar functionality as the Virtual Machine Manager. Allows you to change a VM Guest's status(start, stop, pause, etc.), to set up new guests and devices, or to edit existing configurations. virsh is also useful to script VM Guest management operations.
+
+Libvirt-based tools:
+	virt-viewer:
+		- Libvirt is a set of API Libraries that sites in between the end user and the hypervisor
+		- The hypervisor could be built to use any virtulization technology such as KVM/QEMU,XEN,LXC, VirtulBox, VMWare ESX, MS HyperV and even parallels
+		- Libvirt acts as a sort of transparent layer that can take commands from users, modifies them based on the underlying virtulization technology, and then executes them on the actual hypervisor.
+		- Tools include the libvirtd daemon, API Library, and command line utility called virsh.
+
+virt-manager:
+	- The Virtual Machine Manager is a desktop tool for managing VM Guests. it provides the ability to control the life cycle of existing machines(start/shutdown, pause/resume, save/restore) and create new VM Guests, It allows managing various types of storage and virtual networks. It allows managing various types of storage and virtual networks. It provides access to the graphical console of VM Guests with a built-in VNC viewer and can be used to view performance statistics. virt-manager supports connecting to a local libvirtd, managing a local VM Host Server, or a remote libvirtd managing a remote VM Host Server.
+
+5. KVM Setup
+------------
+5.1 Lecture: System Requirements
+---
+
+$ cat /proc/cpuinfo  (or) lscpu
+$svm
+$vmx
+$lm
+
+$ grep --color -Ew 'svm|vmx|lm' /proc/cpuinfo
+
+#check the processor support
+$ lmod | grep kvm
+
+$ modprobe kvm kvm_intel (or) modprobe kvm kvm_amd
+
+# check whether KVM extenstions enabled.
+
+# check CPU
+$ lscpu
+$ cat /proc/cpuinfo
+
+# check the memory support
+$ free -m 
+
+5.2 Lecture: Installing Virtualization Packages
+-----
+# enable vt-x on the machine.
+
+$ yum install qemu-kvm libvirtd virt-install virt-manager -y
+(or)
+$ dnf install qemu-kvm libvirtd virt-install virt-manager -y
+(or)
+# group install
+$ dnf group install virtulization
+$ yum group install virtulization
+
+$ dnf groupinfo virtulization
+
+# check the libvirtd service status
+$ systemctl enable libvirtd
+$ systemctl start libvirtd
+
+$ systemctl status libvirtd
+
+# check the hosts
+$ virt-host-validate
+
+$ virsh nodeinfo
+$ virsh domcapabilities
+
+5.3 Lecture: Post Installation Task
+------------
+# virt-manager is python based utility
+
+# run virt-manager
+$ virt-manager
+
+$ vi/etc/polkit-1/rules.d/50-default.rules
+	
+	polkit.addAdminRule(function(action, subject) {
+		return ["unix-group:wheel"];
+	});
+	
+# add user in to wheel group
+$ usermod -G wheel pavan
+
+# open virtual manager
+$ virt-manager
+
+# right click on connection --> Details --> Overview: Name --> Virtual networks : Name, IPv4 configuration, NAT and QoS Configuration --> Storage --> Network Interfaces.
+
+
+6. Managing Virtual Machines
+-----------
+6.1 Lecture: Using virt-manager: CentOS 7 Guest VM Install
+---------
+$ virt-manager
+
+# Download CentOS ISO image from CentOS site.
+
+# Images will be created in /var/lib/libvirt/images
+$ ls /var/lib/libvirt/images/
+
+# cd /home/pavan/Downloads/
+$ ls
+# CentOS-7-x86_64-Minimal.iso
+
+# move CentOS image in to libvirt/images directory
+$ mv CentOS-7-x86_64-Minimal.iso /var/lib/libvirt/images
+$ Virtual Machine Manager --> File --> Create a new virtual machine --> Local Install media(ISO image or CDROM) --> forward --> browse --> local --> Downloads --> Choose Memory and CPU settings --> Enable Storage for this virtual machine --> Choose size of the hardware : 20GB --> Name of the virtual machine : child VM1 --> Network Selection : Virtual Network 'default' :NAT --> Finish
+
+Install CentOS 7 --> Choose English --> Network option turned on --> Hostname : CentOS Guest VM --> Date & Time : Make sure network time protocol should be turned on --> Select the harddisk --> software selection --> Minimal installation --> Begin Installation --> Specify the Root Password --> Create new user --> Password and Confirm Password --> 
+
+6.2 Lecture: Using virt-manager: Managing Virtual Machines
+--------
+
+
+6.3 Lecture: Using virt-install: Windows Guest VM Install
+--------
+# Create virtual harddisk
+$ qemu-img create -f raw -o size=10G /var/lib/libvirt/qemu/windows7.img
+
+$ ls /var/lib/libvirt/qemu/
+
+# install VM with command line
+$ virt-install --name windows1 --ram 1024 --disk path=/var/lib/libvirt/qemu/windows7.img --vcpus 1 --os-type=Windows --network bridge=virbr0 --graphics vnc,port=5999 --console pty,target_type=serial --cdrom /home/pavan/Downloads/en_windows_7_professional_with_sp1_x64_dvd_u_676939.iso
+
+6.4 Lecture: Disk Images: Using virt-builder
+------------
+# Automation of VM creates using virt-builder
+
+$ yum install libguestfs-tools-c
+
+# headout to the following URl and download the template for the virtual machine.
+$ www.libguestfs.org/download/builder
+
+$ virt-builder fedora-23 --root-password password:Sunday@123
+# it will download the image from above URL and 
+
+# Import this new disk and create new VM
+$ virt-install --name fedora --ram 1028 --vcpus=1 --disk path=/var/lib/libvirt/qemu/fedora-23.img --import 
+
+# We can login with the password which we set
+
+6.5 Lecture: Using virsh and virt-viewer
+------------
+# list all the virtual machines
+$ virsh list --all
+
+# Start the Virtual Machine
+$ virsh start <<name of the virtual machine">>
+$ virsh start Test1
+
+# show only running vms
+$ virsh list
+
+# Shutdown the virtual machine
+$ virsh shutdown <<Name of the virtual machine>>
+$ virsh shutdown Test1
+
+# Reboot the Guest
+$ virsh reboot <<Name of the Virtual Machine>>
+$ virsh reboot test
+
+# Suspend the virtula machine
+$ virsh suspend Test1
+
+# Resume virtual machine
+$ virsh resume test1
+
+# Connect the virtual machine through viewer
+$ virt-viewer windows
+
+7. KVM Network and Storage
+--------------
+7.1 Lecture: libvirt and Virtual Networking
+------------
+# NAT Mode
+# Routed Mode
+# Isolated Mode
+
+# libvirt's default networking configuration = NAT Mode.
+
+7.2 Lecture: Creating an Isolated Virtual Network
+---------
+
+Virtual Machine Manager --> Edit --> Connection Details --> Virtual Networks --> Click on '+' sign down  there --> network name : isolated --> forward --> Specify the IPv4 network range : Network = 192.168.100.0/24 --> enable DHCP --> not enableing the IPv6 --> forward --> select isolated network --> finish
+
+# Using the virsh command to pull up the network information.
+$ virsh net-list --all
+
+# using xml file to create network
+$ virsh net-dumpxml isolated
+
+$ ip addr # to findout the newly created network
+$ ifconfig
+
+# These xml files would be placed in below folder
+$ cd /etc/libvirt/qemu/network
+
+$ ls
+
+$ cat isolated.xml 
+
+# disable the network from virtual manager
+
+# Start network from command line
+$ virsh net-start isolated
+
+$ virsh net-list --all
+
+7.3 Lecture: Creating a Routed Virtual Network
+------------
+# Create routed network from virtual manager
+
+--> Add --> provide IPv4 address : 10.1.1.80/28 --> forward --> not enabling ipv4 --> forwarding to physical network --> Destination : Physical device eno1 --> Mode: Routed --> Finish
+
+7.4 Lecture: Creating a Disk Image
+------------
+virtual machine manager --> 
+
+# from guest machine
+$ cd /var/lib/libvirt/images
+
+# login to the child machine
+$ mount
+
+# create 1gb image
+$ qemu-img create -f raw addondisk1.img 1G
+
+$ virsh list --all
+
+# list the virtual machines
+$ virsh list --all
+
+$ virsh attach-disk disklab --source /var/lib/libvirt/images/addondisk1.img --target vdc --persistent
+
+$ reboot the child vms
+$ login back with root 
+
+$ cfdisk /dev/vdc
+# create primary partition
+
+$ mkfs.ext4 /dev/vdc1
+
+# create a mount point
+$ cd /mnt
+$ mkdir diskattach
+
+$ mount /dev/vdc1 diskattach/
+$ mount
+
+7.5 Lecture: Storage Pools
+-----------
+
+# virtual manager --> edit --> storage --> click on '+' --> name : virtual machine --> File system : type = dir: Filesystem Directory --> forward --> target path --> finish
+
+6.1 Lecture: Snapshots
+---------
+
+$ virsh list --all
+
+$ virsh snapshot-list disklab
+
+$ virsh snapshot-create <<name of the virtual machine>>
+
+# convert image disk from raw format to qcow2 before create snapshot
+$ virsh snapshot-create test1
+
+# virsh snapshot-list test1
+
+$ qemu-img convert -f raw -O qcow2 fedora23.img fedora-23.qcow2
+
+# Revert from the snapshot
+
+# create files inside the virtual machine
+$ touch damage
+
+$ virsh snapshot-revert test1 --snapshotname "147744"
+
+# We can manage from virtual machine manager
+
+******************************************************************
+
+Stress Testing Linux
+-----------
+# Install stress
+$ yum -y install stress
+
+# run stress
+$ cat /proc/cpuinfo | grep processor | wc -l
+
+$ cat /proc/meminfo
+
+$ 
+$ stress -c 4 -m 8(8*255=2GB) -d 4
+
+****************
+http://ftp.uninett.no/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1804.iso
+
+http://isoredirect.centos.org/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1804.iso
+
+/var/lib/libvirt/images/
+
+ ftp://fr2.rpmfind.net/linux/dag/redhat/el7/en/x86_64/dag/RPMS/stress-1.0.2-1.el7.rf.x86_64.rpm
+ 
+sudo yum install -y epel-release
+sudo yum install -y stress
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
